@@ -28,11 +28,22 @@ def box_blur(channel):
             p[2:, :-2] + p[2:, 1:-1] + p[2:, 2:]) / 9
 
 
+def thicken(channel):
+    # Утолщение линий на 1 пиксель: каждый пиксель берёт максимум из окна 3x3
+    p = np.pad(channel, 1, mode="edge")
+    height, width = channel.shape
+    result = channel.copy()
+    for dy in range(3):
+        for dx in range(3):
+            result = np.maximum(result, p[dy:dy + height, dx:dx + width])
+    return result
+
+
 class ImageFilter(ABC):
     # Базовый класс для всех фильтров
 
     @staticmethod
-    def get_filter(name, param=None, softness=None):
+    def get_filter(name, param=None, softness=None, radius=None):
         # Создаёт фильтр по его имени
         if name == "gray":
             return GrayScale()
@@ -49,7 +60,7 @@ class ImageFilter(ABC):
         if name == "old_photo":
             return OldPhoto(param)
         if name == "neon":
-            return Neon(param)
+            return Neon(param, radius)
 
         raise ValueError(f"Неизвестный фильтр: {name}")
 
@@ -270,12 +281,17 @@ class OldPhoto(ImageFilter):
 class Neon(ImageFilter):
     # Фиолетовое неоновое свечение контуров
 
-    def __init__(self, param=None):
+    def __init__(self, param=None, radius=None):
         if param is None:
             param = 1.0
+        if radius is None:
+            radius = 2
         if not (0 < param <= 3):
             raise ValueError("Сила свечения должна быть в диапазоне (0, 3]")
+        if not (0 <= radius <= 6):
+            raise ValueError("Радиус обводки должен быть в диапазоне [0, 6]")
         self.strength = param
+        self.radius = int(radius)
 
     def apply_filter(self, image):
         img = image.astype(np.float32)
@@ -294,6 +310,10 @@ class Neon(ImageFilter):
         # сила границы от 0 до 1
         edges = np.sqrt(gx ** 2 + gy ** 2) / 2 / 255
         edges = np.clip(edges, 0, 1)
+
+        # утолщаем контур: каждый проход делает линию толще на 1 пиксель с каждой стороны
+        for _ in range(self.radius):
+            edges = thicken(edges)
 
         # два слоя свечения: узкий и широкий
         soft_glow = edges

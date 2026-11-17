@@ -53,7 +53,7 @@ python main.py -i images/mountain.jpg -o results/fade.jpg -f fade_color -p 0.4
 python main.py -i images/mountain.jpg -o results/film.jpg -f film_effect
 python main.py -i images/mountain.jpg -o results/matte.jpg -f matte -p 0.8 -s 0.3
 python main.py -i images/mountain.jpg -o results/old.jpg -f old_photo -p 0.7
-python main.py -i images/mountain.jpg -o results/neon.jpg -f neon -p 1
+python main.py -i images/mountain.jpg -o results/neon.jpg -f neon -p 1 -r 3
 ```
 
 Проверка обработки ошибок:

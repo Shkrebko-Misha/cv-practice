@@ -20,6 +20,8 @@ def cli_argument_parser():
                         help="параметр фильтра (например, коэффициент масштабирования для resize и др. фильтров)")
     parser.add_argument("-s", "--softness", type=float, default=None,
                         help="мягкость края маски (для matte)")
+    parser.add_argument("-r", "--radius", type=float, default=None,
+                        help="толщина неоновой обводки в пикселях (для neon)")
 
     return parser.parse_args()
 
@@ -43,7 +45,7 @@ def main():
         sys.exit(1)
 
     try:
-        image_filter = ImageFilter.get_filter(args.filter, args.param, args.softness)
+        image_filter = ImageFilter.get_filter(args.filter, args.param, args.softness, args.radius)
     except ValueError as error:
         print("Ошибка:", error)
         sys.exit(1)
